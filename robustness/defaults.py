@@ -14,6 +14,12 @@ TRAINING_DEFAULTS = {
     datasets.CIFAR: {
         "epochs": 150,
         "batch_size": 128,
+        "weight_decay": 5e-4,
+        "step_lr": 50
+    },
+    datasets.SVHN: {
+        "epochs": 150,
+        "batch_size": 128,
         "weight_decay":5e-4,
         "step_lr": 50
     },

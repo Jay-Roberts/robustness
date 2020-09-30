@@ -72,6 +72,13 @@ TRAIN_TRANSFORMS_DEFAULT = lambda size: transforms.Compose([
             transforms.RandomRotation(2),
             transforms.ToTensor(),
         ])
+
+TRAIN_TRANSFORMS_NOHORZFLIP = lambda size: transforms.Compose([
+            transforms.RandomCrop(size, padding=4),
+            transforms.ColorJitter(.25,.25,.25),
+            transforms.RandomRotation(2),
+            transforms.ToTensor(),
+        ])
 """
 Generic training data transform, given image side length does random cropping,
 flipping, color jitter, and rotation. Called as, for example,

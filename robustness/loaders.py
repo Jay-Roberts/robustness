@@ -23,8 +23,7 @@ from . import imagenet_models as models
 def make_loaders(workers, batch_size, transforms, data_path, data_aug=True,
                 custom_class=None, dataset="", label_mapping=None, subset=None,
                 subset_type='rand', subset_start=0, val_batch_size=None,
-                only_val=False, shuffle_train=True, shuffle_val=True, seed=1,
-                custom_class_args=None):
+                only_val=False, shuffle_train=True, shuffle_val=True, seed=1):
     '''
     **INTERNAL FUNCTION**
 
@@ -59,12 +58,11 @@ def make_loaders(workers, batch_size, transforms, data_path, data_aug=True,
         test_set = folder.ImageFolder(root=test_path, transform=transform_test,
                                       label_mapping=label_mapping)
     else:
-        if custom_class_args is None: custom_class_args = {}
         if not only_val:
-            train_set = custom_class(root=data_path, train=True, download=True, 
-                                transform=transform_train, **custom_class_args)
-        test_set = custom_class(root=data_path, train=False, download=True, 
-                                transform=transform_test, **custom_class_args)
+            train_set = custom_class(root=data_path, train=True, 
+                                        download=True, transform=transform_train)
+        test_set = custom_class(root=data_path, train=False, 
+                                    download=True, transform=transform_test)
 
     if not only_val:
         attrs = ["samples", "train_data", "data"]

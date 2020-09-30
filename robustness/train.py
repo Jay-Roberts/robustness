@@ -118,7 +118,7 @@ def make_optimizer_and_schedule(args, model, checkpoint, params):
             for i in range(steps_to_take):
                 schedule.step()
         
-        if 'amp' in checkpoint and checkpoint['amp'] not in [None, 'N/A']:
+        if 'amp' in checkpoint and checkpoint['amp'] is not None:
             amp.load_state_dict(checkpoint['amp'])
 
         # TODO: see if there's a smarter way to do this
@@ -175,7 +175,8 @@ def eval_model(args, model, loader, store):
     return log_info
 
 def train_model(args, model, loaders, *, checkpoint=None, 
-            store=None, update_params=None, disable_no_grad=False):
+            store=None, update_params=None, disable_no_grad=True):
+            # store=None, update_params=None, disable_no_grad=False):
     """
     Main function for training a model. 
 

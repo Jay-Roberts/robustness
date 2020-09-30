@@ -3,6 +3,7 @@ CLASS_DICT = {
                    2: 'bird', 3: 'cat', 4: 'deer', 
                    5: 'dog', 6: 'frog', 7: 'horse', 
                    8: 'ship', 9: 'truck'},
+          'SVHN': {-1: 'noise', 0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6:'6', 7:'7', 8:'8', 9:'9'},
           'H2Z': {-1: 'noise', 0: 'horse', 1: 'zebra'},
           'A2O': {-1: 'noise', 0: 'apples', 1: 'orange'},
           'S2W': {-1: 'noise', 0: 'summer', 1: 'winter'},

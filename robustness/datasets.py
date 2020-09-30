@@ -72,29 +72,21 @@ class DataSet(object):
                 transforms to apply to the validation images from the
                 dataset
         """
-        required_args = ['num_classes', 'mean', 'std', 
-                         'transform_train', 'transform_test']
-        optional_args = ['custom_class', 'label_mapping', 'custom_class_args']
-
-        missing_args = set(required_args) - set(kwargs.keys())
-        if len(missing_args) > 0:
-            raise ValueError("Missing required args %s" % missing_args)
-
-        extra_args = set(kwargs.keys()) - set(required_args + optional_args)
-        if len(extra_args) > 0:
-            raise ValueError("Got unrecognized args %s" % extra_args)
-        final_kwargs = {k: kwargs.get(k, None) for k in required_args + optional_args} 
-
+        required_args = ['num_classes', 'mean', 'std', 'custom_class',
+            'label_mapping', 'transform_train', 'transform_test']
+        assert set(kwargs.keys()) == set(required_args), "Missing required args, only saw %s" % kwargs.keys()
         self.ds_name = ds_name
         self.data_path = data_path
-        self.__dict__.update(final_kwargs)
+        self.__dict__.update(kwargs)
     
-    def override_args(self, default_args, kwargs):
+    def override_args(self, default_args, new_args):
         '''
         Convenience method for overriding arguments. (Internal)
         '''
+        kwargs = {k: v for (k, v) in new_args.items() if v is not None}
+        extra_args = set(kwargs.keys()) - set(default_args.keys()) 
+        if len(extra_args) > 0: raise ValueError(f"Invalid arguments: {extra_args}")
         for k in kwargs:
-            if not (k in default_args): continue
             req_type = type(default_args[k])
             no_nones = (default_args[k] is not None) and (kwargs[k] is not None)
             if no_nones and (not isinstance(kwargs[k], req_type)):
@@ -172,8 +164,7 @@ class DataSet(object):
                                     only_val=only_val,
                                     seed=subset_seed,
                                     shuffle_train=shuffle_train,
-                                    shuffle_val=shuffle_val,
-                                    custom_class_args=self.custom_class_args)
+                                    shuffle_val=shuffle_val)
 
 class ImageNet(DataSet):
     '''
@@ -366,6 +357,55 @@ class CIFAR(DataSet):
             raise ValueError('CIFAR does not support pytorch_pretrained=True')
         return cifar_models.__dict__[arch](num_classes=self.num_classes)
 
+class SVHN(DataSet):
+    """
+    SVHN dataset.
+
+    A dataset with 72k training images and 22k testing images, with the
+    following classes:
+
+    * 1
+    * 2
+    * 3
+    * 4
+    * 5
+    * 6
+    * 7
+    * 8
+    * 9
+    * 10
+
+    """
+    def __init__(self, data_path='/tmp/', **kwargs):
+        """
+        """
+        ds_kwargs = {
+            'num_classes': 10,
+            'mean': ch.tensor([0.5, 0.5, 0.5]),
+            'std': ch.tensor([0.2, 0.2, 0.2]),
+            'custom_class': custom_class_svhn,
+            'label_mapping': None,
+            'transform_train': da.TRAIN_TRANSFORMS_NOHORZFLIP(32),
+            'transform_test': da.TEST_TRANSFORMS_DEFAULT(32)
+        }
+        ds_kwargs = self.override_args(ds_kwargs, kwargs)
+        super(SVHN, self).__init__('svhn', data_path, **ds_kwargs)
+
+    def get_model(self, arch, pretrained):
+        """
+        """
+        if pretrained:
+            raise ValueError('SVHN does not support pytorch_pretrained=True')
+        return cifar_models.__dict__[arch](num_classes=self.num_classes)
+
+
+def custom_class_svhn(root, train, download, transform):
+    return datasets.SVHN(root=root,
+                         split='train' if train else 'test',
+                         transform=transform,
+                         download=download)
+
+
 class CINIC(DataSet):
     """
     CINIC-10 dataset [DCA+18]_.
@@ -457,22 +497,15 @@ class OpenImages(DataSet):
     dataset for large-scale multi-label and multi-class image classification.
     Available from https://storage.googleapis.com/openimages/web/index.html. 
     """
-    def __init__(self, data_path, custom_grouping=None, **kwargs):
+    def __init__(self, data_path, **kwargs):
         """
         """
-        if custom_grouping is None:
-            num_classes = 601
-            label_mapping = None 
-        else:
-            num_classes = len(custom_grouping)
-            label_mapping = get_label_mapping("custom_imagenet", custom_grouping)
-
         ds_kwargs = {
-            'num_classes': num_classes,
+            'num_classes': 601,
             'mean': ch.tensor([0.4859, 0.4131, 0.3083]),
             'std': ch.tensor([0.2919, 0.2507, 0.2273]),
             'custom_class': openimgs_helpers.OIDatasetFolder,
-            'label_mapping': label_mapping, 
+            'label_mapping': None, 
             'transform_train': da.TRAIN_TRANSFORMS_IMAGENET,
             'transform_test': da.TEST_TRANSFORMS_IMAGENET
         }
@@ -491,6 +524,7 @@ DATASETS = {
     'restricted_imagenet': RestrictedImageNet,
     'custom_imagenet': CustomImageNet,
     'cifar': CIFAR,
+    'svhn': SVHN,
     'cinic': CINIC,
     'a2b': A2B,
     'places365': Places365,
