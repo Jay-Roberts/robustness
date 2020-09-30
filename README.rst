@@ -1,3 +1,6 @@
+A fork of the MadryLab robustness repo with SVHN support.
+
+ORIGINAL DOCUMENTATION
 robustness package
 ==================
 Install via ``pip``: ``pip install robustness``
